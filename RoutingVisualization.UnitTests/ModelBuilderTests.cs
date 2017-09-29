@@ -13,7 +13,7 @@ namespace RoutingVisualization.UnitTests
             var nodeStrategy = new NodeStrategy(endpointNodeStrategy, messageNodeStrategy);
             var modelBuilder = new ModelBuilder(nodeStrategy);
 
-            var message = new ProcessedMessage
+            var message = new Message
             {
                 Headers = new Dictionary<string, string>()
             };
@@ -31,7 +31,7 @@ namespace RoutingVisualization.UnitTests
             var nodeStrategy = new NodeStrategy(endpointNodeStrategy, messageNodeStrategy);
             var modelBuilder = new ModelBuilder(nodeStrategy);
 
-            var message = new ProcessedMessage
+            var message = new Message
             {
                 Headers = new Dictionary<string, string>
                 {

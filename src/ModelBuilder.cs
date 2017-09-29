@@ -13,7 +13,7 @@ namespace RoutingVisualization
             _nodeStrategy = nodeStrategy;
         }
 
-        public void Accept(ProcessedMessage message)
+        public void Accept(Message message)
         {
             if (message?.Headers == null)
             {
@@ -28,18 +28,18 @@ namespace RoutingVisualization
             if (intent == "Subscribe" || intent == "Unsubscribe")
                 return;
 
-            var senderId = _nodeStrategy.GetNodeId(message.MessageMetadata.SendingEndpoint);
+            var senderId = _nodeStrategy.GetNodeId(message.Sending_Endpoint);
             if (senderId != null)
             {
                 var senderNode = _model.GetEndpoint(senderId);
-                senderNode["Label"] = message.MessageMetadata.SendingEndpoint.Name;
+                senderNode["Label"] = message.Sending_Endpoint.Name;
             }
 
-            var receiverId = _nodeStrategy.GetNodeId(message.MessageMetadata.ReceivingEndpoint);
+            var receiverId = _nodeStrategy.GetNodeId(message.Receiving_Endpoint);
             if(receiverId != null)
             { 
                 var receiverNode = _model.GetEndpoint(receiverId);
-                receiverNode["Label"] = message.MessageMetadata.ReceivingEndpoint.Name;
+                receiverNode["Label"] = message.Receiving_Endpoint.Name;
             }
 
             var messageId = _nodeStrategy.GetNodeId(message);
@@ -47,9 +47,9 @@ namespace RoutingVisualization
             { 
                 var messageNode = _model.GetMessage(messageId);
                 messageNode["Intent"] = intent;
-                if (!string.IsNullOrWhiteSpace(message.MessageMetadata.MessageType))
+                if (!string.IsNullOrWhiteSpace(message.Message_Type))
                 {
-                    messageNode["Label"] = message.MessageMetadata.MessageType.Split('.').Last();
+                    messageNode["Label"] = message.Message_Type.Split('.').Last();
                 }
             }
 

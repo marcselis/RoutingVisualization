@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace RoutingVisualization
 {
-    public class ProcessedMessage
-    {
-        public MessageMetadata MessageMetadata { get; set; }
-        public Dictionary<string, string> Headers { get; set; }
-    }
-
     public class EndpointDetails
     {
         public string Name { get; set; }
         public string Host { get; set; }
     }
 
-    public class MessageMetadata
+    public class Message
     {
-        public string MessageType { get; set; }
-        public EndpointDetails SendingEndpoint { get; set; }
-        public EndpointDetails ReceivingEndpoint { get; set; }
+        public string Id { get; set; }
+        [JsonConverter(typeof(DictionaryConverter))]
+        public IDictionary<string, string> Headers { get; set; }
+        // public string MessageId { get; set; }
+        public EndpointDetails Sending_Endpoint { get; set; }
+        public EndpointDetails Receiving_Endpoint { get; set; }
+        public string Message_Type { get; set; }
     }
 }

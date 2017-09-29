@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 
 namespace RoutingVisualization
 {
-    public class NodeStrategy : INodeStrategy<EndpointDetails>, INodeStrategy<ProcessedMessage>
+    public class NodeStrategy : INodeStrategy<EndpointDetails>, INodeStrategy<Message>
     {
-        private INodeStrategy<EndpointDetails> _endpointNodeStrategy;
-        private INodeStrategy<ProcessedMessage> _messageNodeStrategy;
+        private readonly INodeStrategy<EndpointDetails> _endpointNodeStrategy;
+        private readonly INodeStrategy<Message> _messageNodeStrategy;
 
-        public NodeStrategy(INodeStrategy<EndpointDetails> endpointNodeStrategy, INodeStrategy<ProcessedMessage> messageNodeStrategy)
+        public NodeStrategy(INodeStrategy<EndpointDetails> endpointNodeStrategy, INodeStrategy<Message> messageNodeStrategy)
         {
             _endpointNodeStrategy = endpointNodeStrategy;
             _messageNodeStrategy = messageNodeStrategy;
@@ -20,7 +20,7 @@ namespace RoutingVisualization
             return _endpointNodeStrategy.GetNodeId(details);
         }
 
-        public string GetNodeId(ProcessedMessage details)
+        public string GetNodeId(Message details)
         {
             return _messageNodeStrategy.GetNodeId(details);
         }
@@ -60,62 +60,62 @@ namespace RoutingVisualization
         }
     }
 
-    class CollaseMessagesFromSameSenderMessageNodeStrategy : NodeStrategy<ProcessedMessage>
+    class CollaseMessagesFromSameSenderMessageNodeStrategy : NodeStrategy<Message>
     {
-        private NodeStrategy<EndpointDetails> _endpointNodeStrategy;
+        private readonly NodeStrategy<EndpointDetails> _endpointNodeStrategy;
 
         public CollaseMessagesFromSameSenderMessageNodeStrategy(NodeStrategy<EndpointDetails> endpointNodeStrategy)
         {
             _endpointNodeStrategy = endpointNodeStrategy;
         }
 
-        public override string GetNodeId(ProcessedMessage details)
+        public override string GetNodeId(Message details)
         {
             var intent = details.Headers["NServiceBus.MessageIntent"];
-            var sendingEndpointNodeId = _endpointNodeStrategy.GetNodeId(details.MessageMetadata.SendingEndpoint);
-            return ToNodeName(sendingEndpointNodeId, intent, details.MessageMetadata.MessageType);
+            var sendingEndpointNodeId = _endpointNodeStrategy.GetNodeId(details.Sending_Endpoint);
+            return ToNodeName(sendingEndpointNodeId, intent, details.Message_Type);
         }
     }
 
-    class CollapseMessagesToSameReceiverMessageNodeStrategy : NodeStrategy<ProcessedMessage>
+    class CollapseMessagesToSameReceiverMessageNodeStrategy : NodeStrategy<Message>
     {
-        private NodeStrategy<EndpointDetails> _endpointNodeStrategy;
+        private readonly NodeStrategy<EndpointDetails> _endpointNodeStrategy;
 
         public CollapseMessagesToSameReceiverMessageNodeStrategy(NodeStrategy<EndpointDetails> endpointNodeStrategy)
         {
             _endpointNodeStrategy = endpointNodeStrategy;
         }
 
-        public override string GetNodeId(ProcessedMessage details)
+        public override string GetNodeId(Message details)
         {
             var intent = details.Headers["NServiceBus.MessageIntent"];
-            var receivingEndpointNodeId = _endpointNodeStrategy.GetNodeId(details.MessageMetadata.ReceivingEndpoint);
-            return ToNodeName(receivingEndpointNodeId, intent, details.MessageMetadata.MessageType);
+            var receivingEndpointNodeId = _endpointNodeStrategy.GetNodeId(details.Receiving_Endpoint);
+            return ToNodeName(receivingEndpointNodeId, intent, details.Message_Type);
         }
     }
 
-    class IntentBasedMessageNodeStrategy : INodeStrategy<ProcessedMessage>
+    class IntentBasedMessageNodeStrategy : INodeStrategy<Message>
     {
-        private IDictionary<string, INodeStrategy<ProcessedMessage>> _strategyMap = new Dictionary<string, INodeStrategy<ProcessedMessage>>(StringComparer.InvariantCultureIgnoreCase);
-        private INodeStrategy<ProcessedMessage> _defaultStrategy;
+        private readonly IDictionary<string, INodeStrategy<Message>> _strategyMap = new Dictionary<string, INodeStrategy<Message>>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly INodeStrategy<Message> _defaultStrategy;
 
-        public IntentBasedMessageNodeStrategy(INodeStrategy<ProcessedMessage> defaultStrategy)
+        public IntentBasedMessageNodeStrategy(INodeStrategy<Message> defaultStrategy)
         {
             _defaultStrategy = defaultStrategy;
         }
 
-        public string GetNodeId(ProcessedMessage details)
+        public string GetNodeId(Message details)
         {
             var intent = details.Headers["NServiceBus.MessageIntent"];
 
-            INodeStrategy<ProcessedMessage> strategy;
+            INodeStrategy<Message> strategy;
             if (!_strategyMap.TryGetValue(intent, out strategy))
                 strategy = _defaultStrategy;
 
             return strategy.GetNodeId(details);
         }
 
-        public void Add(string intent, INodeStrategy<ProcessedMessage> strategy)
+        public void Add(string intent, INodeStrategy<Message> strategy)
         {
             _strategyMap.Add(intent, strategy);
         }

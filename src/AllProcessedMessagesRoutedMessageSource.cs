@@ -18,7 +18,13 @@ namespace RoutingVisualization
             using (var stream = session.Advanced.Stream<ProcessedMessage>("ProcessedMessage"))
             {
                 var count = 0;
-                while (stream.MoveNext())
+                bool loop = true;
+                Console.CancelKeyPress += (k, e) =>
+                {
+                    e.Cancel = true;
+                    loop = false;
+                };
+                while (stream.MoveNext() && loop)
                 {
                     Console.Write($"\rMessage #{count++}");
                     onNext(stream.Current.Document);
